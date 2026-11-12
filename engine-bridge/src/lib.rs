@@ -1,7 +1,7 @@
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
-use pumpkin_config::PumpkinConfig;
+use pumpkin_config::{LoadConfiguration, PumpkinConfig};
 use pumpkin_core::{
     command::CommandSender,
     data::VanillaData,
