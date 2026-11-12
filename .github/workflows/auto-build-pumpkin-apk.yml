@@ -1,21 +1,30 @@
-name: Auto Build Pumpkin + Android APK
+name: Build Pumpkin Engine Modules and Android APK
 
 run-name: >-
-  Pumpkin ${{ inputs.pumpkin_ref || 'latest release' }} → Android APK
+  Pumpkin engine ${{ inputs.channel || (github.event_name == 'schedule' && 'nightly') || 'validation' }} → Android
 
 on:
   workflow_dispatch:
     inputs:
+      channel:
+        description: Engine release channel
+        required: true
+        type: choice
+        options:
+          - release
+          - nightly
+        default: release
       pumpkin_ref:
-        description: "Optional Pumpkin tag, branch, or commit SHA (blank = latest GitHub release)"
+        description: Optional Pumpkin tag, branch, or commit SHA (blank selects the channel default)
         required: false
         type: string
   schedule:
     - cron: "0 2 * * *"
   pull_request:
-    branches: [master, ci/auto-build-pumpkin-apk]
+    branches: [master]
     paths:
       - ".github/workflows/auto-build-pumpkin-apk.yml"
+      - "engine-bridge/**"
       - "app/**"
       - "gradle/**"
       - "build.gradle.kts"
@@ -25,6 +34,7 @@ on:
     branches: [master]
     paths:
       - ".github/workflows/auto-build-pumpkin-apk.yml"
+      - "engine-bridge/**"
       - "app/**"
       - "gradle/**"
       - "build.gradle.kts"
@@ -35,64 +45,128 @@ permissions:
   contents: read
 
 concurrency:
-  group: pumpkin-android-build-${{ github.ref }}
+  group: pumpkin-engine-android-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-pumpkin:
-    name: Cross-compile Pumpkin for Android
+  resolve-source:
+    name: Resolve Pumpkin source
     runs-on: ubuntu-24.04
     outputs:
-      pumpkin_ref: ${{ steps.resolve.outputs.ref }}
+      channel: ${{ steps.resolve.outputs.channel }}
+      source_ref: ${{ steps.resolve.outputs.source_ref }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
+      version: ${{ steps.resolve.outputs.version }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      prerelease: ${{ steps.resolve.outputs.prerelease }}
+      make_latest: ${{ steps.resolve.outputs.make_latest }}
     steps:
-      - name: Checkout launcher
-        uses: actions/checkout@v4
-
-      - name: Resolve Pumpkin source ref
+      - name: Resolve channel and source ref
         id: resolve
         env:
-          REQUESTED_REF: ${{ inputs.pumpkin_ref }}
           GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_CHANNEL: ${{ inputs.channel }}
+          INPUT_REF: ${{ inputs.pumpkin_ref }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${REQUESTED_REF}" ]]; then
-            ref="${REQUESTED_REF}"
+
+          if [[ "${EVENT_NAME}" == "schedule" ]]; then
+            channel="nightly"
+          elif [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            channel="${INPUT_CHANNEL}"
           else
-            ref="$(gh api repos/Pumpkin-MC/Pumpkin/releases --paginate --jq '.[0].tag_name' | head -n1)"
-            if [[ -z "${ref}" || "${ref}" == "null" ]]; then
-              echo "::error::Could not resolve the latest Pumpkin release."
-              exit 1
+            channel="validation"
+          fi
+
+          ref="${INPUT_REF:-}"
+          if [[ -z "${ref}" ]]; then
+            if [[ "${channel}" == "nightly" ]]; then
+              ref="master"
+            else
+              ref="$(gh api repos/Pumpkin-MC/Pumpkin/releases --paginate --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' | head -n1)"
+              if [[ -z "${ref}" ]]; then
+                ref="master"
+              fi
             fi
           fi
-          echo "ref=${ref}" >> "${GITHUB_OUTPUT}"
-          echo "Building Pumpkin ref: ${ref}"
+
+          source_sha="$(gh api "repos/Pumpkin-MC/Pumpkin/commits/${ref}" --jq .sha)"
+          if [[ -z "${source_sha}" || "${source_sha}" == "null" ]]; then
+            echo "::error::Could not resolve Pumpkin ref '${ref}'"
+            exit 1
+          fi
+
+          short_sha="${source_sha:0:7}"
+          release_tag=""
+          prerelease="false"
+          make_latest="false"
+          version="${ref}@${short_sha}"
+
+          if [[ "${channel}" == "nightly" ]]; then
+            release_tag="pumpkin-nightly-$(date -u +%Y%m%d)-${short_sha}"
+            prerelease="true"
+          elif [[ "${channel}" == "release" ]]; then
+            release_tag="pumpkin-${ref//\//-}"
+            prerelease="false"
+            make_latest="true"
+          fi
+
+          {
+            echo "channel=${channel}"
+            echo "source_ref=${ref}"
+            echo "source_sha=${source_sha}"
+            echo "version=${version}"
+            echo "release_tag=${release_tag}"
+            echo "prerelease=${prerelease}"
+            echo "make_latest=${make_latest}"
+          } >> "${GITHUB_OUTPUT}"
+
+          echo "Channel: ${channel}"
+          echo "Pumpkin ref: ${ref}"
+          echo "Pumpkin commit: ${source_sha}"
+
+  build-engine:
+    name: Build engine — ${{ matrix.android_abi }}
+    needs: resolve-source
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - android_abi: arm64-v8a
+            rust_target: aarch64-linux-android
+            expected_machine: AArch64
+          - android_abi: armeabi-v7a
+            rust_target: armv7-linux-androideabi
+            expected_machine: ARM
+          - android_abi: x86_64
+            rust_target: x86_64-linux-android
+            expected_machine: X86-64
+    env:
+      CARGO_BUILD_JOBS: "2"
+    steps:
+      - name: Checkout launcher
+        uses: actions/checkout@v4
 
       - name: Checkout Pumpkin source
         uses: actions/checkout@v4
         with:
           repository: Pumpkin-MC/Pumpkin
-          ref: ${{ steps.resolve.outputs.ref }}
+          ref: ${{ needs.resolve-source.outputs.source_ref }}
           path: Pumpkin
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install Rust toolchain and Android targets
+      - name: Install Rust toolchain and target
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+          targets: ${{ matrix.rust_target }}
 
-      - name: Configure Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Install Android SDK and NDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          # Google removed the legacy "tools" SDK package. v3 defaults to
-          # requesting it, which makes sdkmanager fail before the build starts.
           packages: platform-tools
 
       - name: Install pinned Android NDK
@@ -106,97 +180,49 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: Pumpkin -> target
+          workspaces: engine-bridge -> target
 
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --locked
 
-      - name: Build Pumpkin for all Android ABIs
-        working-directory: Pumpkin
-        env:
-          CARGO_BUILD_JOBS: "2"
-        shell: bash
-        run: |
-          set -uo pipefail
-
-          # Remove old outputs first so a failed compile cannot pass verification
-          # by accidentally reusing a binary from a previous run.
-          rm -f target/aarch64-linux-android/release/pumpkin
-          rm -f target/armv7-linux-androideabi/release/pumpkin
-          rm -f target/x86_64-linux-android/release/pumpkin
-
-          # Pumpkin currently builds an executable rather than a cdylib.
-          # cargo-ndk may return non-zero during its final .so-copy phase even
-          # after Cargo successfully produced all target executables. Verify
-          # the actual target outputs and their ELF architectures below.
-          cargo ndk \
-            -t arm64-v8a \
-            -t armeabi-v7a \
-            -t x86_64 \
-            --platform 26 \
-            -o ./android-build \
-            build --release -p pumpkin
-          cargo_status=$?
-
-          targets=(
-            "aarch64-linux-android:AArch64"
-            "armv7-linux-androideabi:ARM"
-            "x86_64-linux-android:X86-64"
-          )
-
-          for entry in "${targets[@]}"; do
-            target="${entry%%:*}"
-            expected="${entry#*:}"
-            binary="target/${target}/release/pumpkin"
-
-            if [[ ! -s "${binary}" ]]; then
-              echo "::error::Missing Pumpkin executable for ${target}; cargo-ndk exit code: ${cargo_status}"
-              exit 1
-            fi
-
-            actual="$(readelf -h "${binary}" | awk -F: '/Machine:/ {gsub(/^[ \t]+/, "", $2); print $2}')"
-            if [[ "${actual}" != *"${expected}"* ]]; then
-              echo "::error::Wrong ELF architecture for ${target}: ${actual}"
-              exit 1
-            fi
-            echo "Verified ${target}: ${actual} ($(du -h "${binary}" | cut -f1))"
-          done
-
-          if [[ "${cargo_status}" -ne 0 ]]; then
-            echo "::warning::cargo-ndk returned ${cargo_status}, but all three freshly-built executables passed ELF verification. This is the documented executable-vs-cdylib post-processing quirk."
-          fi
-
-      - name: Stage native executables as Android libraries
+      - name: Build Pumpkin Android shared library
+        working-directory: engine-bridge
         shell: bash
         run: |
           set -euo pipefail
-          root="app/src/main/jniLibs"
-          install -D "Pumpkin/target/aarch64-linux-android/release/pumpkin" "${root}/arm64-v8a/libpumpkin.so"
-          install -D "Pumpkin/target/armv7-linux-androideabi/release/pumpkin" "${root}/armeabi-v7a/libpumpkin.so"
-          install -D "Pumpkin/target/x86_64-linux-android/release/pumpkin" "${root}/x86_64/libpumpkin.so"
-          find "${root}" -type f -name libpumpkin.so -exec ls -lh {} \;
+          rm -rf ../dist
+          mkdir -p ../dist
+          cargo ndk \
+            -t "${{ matrix.android_abi }}" \
+            --platform 26 \
+            -o ../dist \
+            build --release
+          library="../dist/${{ matrix.android_abi }}/libpumpkin_engine.so"
+          test -s "${library}"
+          cp "${library}" "../dist/libpumpkin_engine-${{ matrix.android_abi }}.so"
+          actual="$(readelf -h "../dist/libpumpkin_engine-${{ matrix.android_abi }}.so" | awk -F: '/Machine:/ {gsub(/^[ \t]+/, "", $2); print $2}')"
+          if [[ "${actual}" != *"${{ matrix.expected_machine }}"* ]]; then
+            echo "::error::Expected ${{ matrix.expected_machine }}, got ${actual}"
+            exit 1
+          fi
+          file "../dist/libpumpkin_engine-${{ matrix.android_abi }}.so"
+          sha256sum "../dist/libpumpkin_engine-${{ matrix.android_abi }}.so"
 
-      - name: Upload Pumpkin native binaries
+      - name: Upload engine library
         uses: actions/upload-artifact@v4
         with:
-          name: pumpkin-native-${{ github.run_id }}
-          path: app/src/main/jniLibs/
+          name: engine-${{ matrix.android_abi }}
+          path: dist/libpumpkin_engine-${{ matrix.android_abi }}.so
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
 
   build-apk:
-    name: Build Android APK
+    name: Build modular Android APK
+    needs: build-engine
     runs-on: ubuntu-24.04
-    needs: build-pumpkin
     steps:
       - name: Checkout launcher
         uses: actions/checkout@v4
-
-      - name: Download Pumpkin native binaries
-        uses: actions/download-artifact@v4
-        with:
-          name: pumpkin-native-${{ github.run_id }}
-          path: app/src/main/jniLibs/
 
       - name: Configure Java
         uses: actions/setup-java@v4
@@ -204,7 +230,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
@@ -219,19 +245,16 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --no-daemon --stacktrace assembleDebug
 
-      - name: Verify APK contains all Pumpkin architectures
+      - name: Verify APK does not bundle Pumpkin engine
         shell: bash
         run: |
           set -euo pipefail
           apk="app/build/outputs/apk/debug/app-debug.apk"
           test -s "${apk}"
-          for abi in arm64-v8a armeabi-v7a x86_64; do
-            unzip -Z1 "${apk}" | grep -Fx "lib/${abi}/libpumpkin.so" >/dev/null || {
-              echo "::error::APK is missing libpumpkin.so for ${abi}"
-              exit 1
-            }
-          done
-          echo "APK verified: ${apk}"
+          if unzip -Z1 "${apk}" | grep -E '^lib/.+libpumpkin_engine\.so$'; then
+            echo "::error::Pumpkin engine must remain independently downloadable"
+            exit 1
+          fi
           sha256sum "${apk}"
 
       - name: Upload installable debug APK
@@ -241,3 +264,83 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+  publish-engine:
+    name: Publish Pumpkin engine release
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: [resolve-source, build-engine]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download architecture libraries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: engine-*
+          path: dist
+          merge-multiple: true
+
+      - name: Generate release manifest and notes
+        env:
+          CHANNEL: ${{ needs.resolve-source.outputs.channel }}
+          VERSION: ${{ needs.resolve-source.outputs.version }}
+          SOURCE_REF: ${{ needs.resolve-source.outputs.source_ref }}
+          SOURCE_SHA: ${{ needs.resolve-source.outputs.source_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            test -s "dist/libpumpkin_engine-${abi}.so"
+          done
+
+          a64="libpumpkin_engine-arm64-v8a.so"
+          a32="libpumpkin_engine-armeabi-v7a.so"
+          x64="libpumpkin_engine-x86_64.so"
+
+          jq -n \
+            --arg channel "${CHANNEL}" \
+            --arg version "${VERSION}" \
+            --arg sourceRef "${SOURCE_REF}" \
+            --arg sourceSha "${SOURCE_SHA}" \
+            --arg builtAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg a64 "${a64}" --arg a64sha "$(sha256sum "dist/${a64}" | cut -d' ' -f1)" \
+            --arg a32 "${a32}" --arg a32sha "$(sha256sum "dist/${a32}" | cut -d' ' -f1)" \
+            --arg x64 "${x64}" --arg x64sha "$(sha256sum "dist/${x64}" | cut -d' ' -f1)" \
+            '{
+              schemaVersion: 1,
+              engine: "Pumpkin-MC",
+              channel: $channel,
+              version: $version,
+              sourceRef: $sourceRef,
+              sourceSha: $sourceSha,
+              builtAt: $builtAt,
+              assets: {
+                "arm64-v8a": {name: $a64, sha256: $a64sha},
+                "armeabi-v7a": {name: $a32, sha256: $a32sha},
+                "x86_64": {name: $x64, sha256: $x64sha}
+              }
+            }' > dist/manifest.json
+
+          cat > dist/RELEASE_NOTES.md <<EOF
+          ## Pumpkin Android engine
+
+          - Channel: ${CHANNEL}
+          - Upstream ref: ${SOURCE_REF}
+          - Upstream commit: ${SOURCE_SHA}
+          - Architectures: arm64-v8a, armeabi-v7a, x86_64
+          - Published by PumpkinLauncher CI.
+          EOF
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.resolve-source.outputs.release_tag }}
+          name: Pumpkin Engine ${{ needs.resolve-source.outputs.version }}
+          body_path: dist/RELEASE_NOTES.md
+          prerelease: ${{ needs.resolve-source.outputs.prerelease }}
+          make_latest: ${{ needs.resolve-source.outputs.make_latest }}
+          files: |
+            dist/libpumpkin_engine-*.so
+            dist/manifest.json
+          fail_on_unmatched_files: true
+          overwrite_files: true
