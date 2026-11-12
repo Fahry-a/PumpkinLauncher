@@ -23,6 +23,7 @@ use std::{
 use tokio::runtime::{Builder, Handle};
 
 static RUNNING: AtomicBool = AtomicBool::new(false);
+static STOP_REQUESTED: AtomicBool = AtomicBool::new(false);
 static LOGGER_INIT: Once = Once::new();
 static RAYON_INIT: Once = Once::new();
 static ACTIVE_SERVER: OnceLock<Mutex<Option<Arc<Server>>>> = OnceLock::new();
@@ -90,7 +91,10 @@ fn run_engine(work_dir: String, log_file: String) -> Result<(), String> {
 
             let server = pumpkin.server.clone();
             if let Ok(mut slot) = server_slot().lock() {
-                *slot = Some(server);
+                *slot = Some(server.clone());
+            }
+            if STOP_REQUESTED.swap(false, Ordering::AcqRel) {
+                server.stop();
             }
             if let Ok(mut slot) = runtime_slot().lock() {
                 *slot = Some(handle);
@@ -123,6 +127,7 @@ pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativ
         return -1;
     }
 
+    STOP_REQUESTED.store(false, Ordering::Release);
     let work_dir = match java_string(&mut env, work_dir) {
         Ok(value) => value,
         Err(_) => {
@@ -201,6 +206,7 @@ pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativ
     _env: JNIEnv<'_>,
     _class: JClass<'_>,
 ) -> jboolean {
+    STOP_REQUESTED.store(true, Ordering::Release);
     let server = match server_slot().lock() {
         Ok(slot) => slot.as_ref().cloned(),
         Err(_) => None,
