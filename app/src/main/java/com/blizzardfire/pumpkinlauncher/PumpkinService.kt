@@ -22,6 +22,7 @@ class PumpkinService : Service() {
     private val notificationId = 1
     private val binder = LocalBinder()
     private var engineThread: Thread? = null
+    @Volatile private var stopRequested: Boolean = false
 
     var serverStartTime: Long = 0
         private set
@@ -47,12 +48,14 @@ class PumpkinService : Service() {
             startForeground(notificationId, notification)
         }
         if (engineThread?.isAlive != true) {
+            stopRequested = false
             engineThread = Thread({ startPumpkinServer() }, "PumpkinEngineMonitor").also { it.start() }
         }
         return START_STICKY
     }
 
     private fun startPumpkinServer() {
+        isServerActive = true
         try {
             val engineLibrary = EngineModuleManager.activeLibrary(this)
                 ?: throw IllegalStateException("No Pumpkin engine is installed. Open Engine Manager first.")
@@ -68,9 +71,9 @@ class PumpkinService : Service() {
                 throw IllegalStateException("Native engine refused to start (code $startResult).")
             }
 
+            if (stopRequested) PumpkinNative.nativeStop()
             serverStartTime = System.currentTimeMillis()
             isRunning = true
-            isServerActive = true
             updateNotification("Pumpkin server running")
             broadcastLog("Pumpkin engine started.")
 
@@ -126,13 +129,14 @@ class PumpkinService : Service() {
     }
 
     fun stopServer() {
-        if (!isRunning) {
+        stopRequested = true
+        if (engineThread?.isAlive != true) {
             stopSelf()
             return
         }
         broadcastLog("Stopping Pumpkin server...")
         updateNotification("Stopping Pumpkin server...")
-        PumpkinNative.nativeStop()
+        if (PumpkinNative.isLoaded) PumpkinNative.nativeStop()
     }
 
     fun backupWorld() {
@@ -200,7 +204,7 @@ class PumpkinService : Service() {
     }
 
     override fun onDestroy() {
-        if (isRunning) {
+        if (engineThread?.isAlive == true && PumpkinNative.isLoaded) {
             try {
                 PumpkinNative.nativeStop()
             } catch (_: Throwable) {
