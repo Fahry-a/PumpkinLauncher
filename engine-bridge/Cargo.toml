@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 jni = "0.21.1"
+tracing = "0.1.44"
 pumpkin-core = { path = "../Pumpkin/crates/pumpkin-core" }
 pumpkin-config = { path = "../Pumpkin/crates/pumpkin-config" }
 pumpkin-wasm-host = { path = "../Pumpkin/crates/pumpkin-wasm-host" }
