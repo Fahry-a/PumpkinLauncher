@@ -12,6 +12,15 @@ on:
         type: string
   schedule:
     - cron: "0 2 * * *"
+  pull_request:
+    branches: [master]
+    paths:
+      - ".github/workflows/auto-build-pumpkin-apk.yml"
+      - "app/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
   push:
     branches: [master]
     paths:
