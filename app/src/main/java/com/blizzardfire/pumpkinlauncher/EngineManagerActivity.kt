@@ -91,12 +91,12 @@ class EngineManagerActivity : AppCompatActivity() {
                     status.text = if (releases.isEmpty()) {
                         "No $channel engine releases have been published yet."
                     } else {
-                        "\${releases.size} $channel build(s) available"
+                        "${releases.size} $channel build(s) available"
                     }
                     releases.forEach { release -> addReleaseRow(release) }
                 }
             } catch (error: Exception) {
-                runOnUiThread { status.text = "Could not load releases: \${error.message}" }
+                runOnUiThread { status.text = "Could not load releases: ${error.message}" }
             }
         }
     }
@@ -118,7 +118,7 @@ class EngineManagerActivity : AppCompatActivity() {
             typeface = Typeface.DEFAULT_BOLD
         })
         card.addView(TextView(this).apply {
-            text = "\${release.tagName}\nPublished: \${release.publishedAt}"
+            text = "${release.tagName}\nPublished: ${release.publishedAt}"
             textSize = 12f
             setPadding(0, dp(4), 0, dp(6))
         })
@@ -151,12 +151,12 @@ class EngineManagerActivity : AppCompatActivity() {
             val tag = engine.directory.name
             val active = EngineModuleManager.activeVersion(this) == tag
             card.addView(TextView(this).apply {
-                text = "\${engine.version} (\${engine.channel})"
+                text = "${engine.version} (${engine.channel})"
                 textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
             })
             card.addView(TextView(this).apply {
-                text = "ABI: \${engine.abi}\n\${engine.library.absolutePath}"
+                text = "ABI: ${engine.abi}\n${engine.library.absolutePath}"
                 textSize = 11f
                 setPadding(0, dp(4), 0, dp(6))
             })
@@ -172,13 +172,13 @@ class EngineManagerActivity : AppCompatActivity() {
     }
 
     private fun install(release: EngineRelease) {
-        status.text = "Downloading \${release.tagName}…"
+        status.text = "Downloading ${release.tagName}…"
         executor.execute {
             try {
                 val engine = EngineModuleManager.install(this, release)
                 runOnUiThread {
                     if (PumpkinService.isServerActive) {
-                        status.text = "Installed \${engine.version}. Stop the server before activating it."
+                        status.text = "Installed ${engine.version}. Stop the server before activating it."
                         showInstalled()
                     } else {
                         EngineModuleManager.activate(this, release.tagName)
@@ -191,7 +191,7 @@ class EngineManagerActivity : AppCompatActivity() {
                     }
                 }
             } catch (error: Exception) {
-                runOnUiThread { status.text = "Installation failed: \${error.message}" }
+                runOnUiThread { status.text = "Installation failed: ${error.message}" }
             }
         }
     }
@@ -209,7 +209,7 @@ class EngineManagerActivity : AppCompatActivity() {
             }
             showInstalled()
         } catch (error: Exception) {
-            status.text = "Activation failed: \${error.message}"
+            status.text = "Activation failed: ${error.message}"
         }
     }
 
