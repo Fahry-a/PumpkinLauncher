@@ -90,6 +90,10 @@ jobs:
 
       - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
+        with:
+          # Google removed the legacy "tools" SDK package. v3 defaults to
+          # requesting it, which makes sdkmanager fail before the build starts.
+          packages: platform-tools
 
       - name: Install pinned Android NDK
         shell: bash
@@ -202,6 +206,8 @@ jobs:
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
