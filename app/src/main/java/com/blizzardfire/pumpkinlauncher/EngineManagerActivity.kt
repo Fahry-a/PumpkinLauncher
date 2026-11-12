@@ -149,7 +149,7 @@ class EngineManagerActivity : AppCompatActivity() {
                 setBackgroundColor(0xFFEFEFEF.toInt())
             }
             val tag = engine.directory.name
-            val active = EngineModuleManager.activeVersion(this) == tag
+            val active = EngineModuleManager.activeVersion(this)?.let { safeTag(it) } == tag
             card.addView(TextView(this).apply {
                 text = "${engine.version} (${engine.channel})"
                 textSize = 16f
@@ -185,7 +185,7 @@ class EngineManagerActivity : AppCompatActivity() {
                         updateStatus()
                         Toast.makeText(this, "Engine installed and activated", Toast.LENGTH_LONG).show()
                         if (PumpkinNative.isLoaded) {
-                            status.text = "Engine selected. Restart PumpkinLauncher to load the new version."
+                            Toast.makeText(this, "Restart PumpkinLauncher to load the selected engine.", Toast.LENGTH_LONG).show()
                         }
                         loadChannel(selectedChannel)
                     }
@@ -204,10 +204,10 @@ class EngineManagerActivity : AppCompatActivity() {
         try {
             EngineModuleManager.activate(this, tag)
             updateStatus()
+            showInstalled()
             if (PumpkinNative.isLoaded) {
                 status.text = "Engine selected. Restart PumpkinLauncher to load the new version."
             }
-            showInstalled()
         } catch (error: Exception) {
             status.text = "Activation failed: ${error.message}"
         }
