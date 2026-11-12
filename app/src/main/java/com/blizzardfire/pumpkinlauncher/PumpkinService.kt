@@ -62,7 +62,7 @@ class PumpkinService : Service() {
             val logFile = File(filesDir, "engine-logs/latest.log")
             val initialOffset = if (logFile.isFile) logFile.length() else 0L
 
-            broadcastLog("Starting Pumpkin engine \${EngineModuleManager.activeVersion(this) ?: ""}...")
+            broadcastLog("Starting Pumpkin engine ${EngineModuleManager.activeVersion(this) ?: ""}...")
             val startResult = PumpkinNative.nativeStart(workDir.absolutePath, logFile.absolutePath)
             if (startResult != 0) {
                 throw IllegalStateException("Native engine refused to start (code $startResult).")
@@ -83,7 +83,7 @@ class PumpkinService : Service() {
             broadcastLog("Pumpkin server stopped.")
         } catch (error: Throwable) {
             Log.e("PumpkinServer", "Failed to start or monitor Pumpkin engine", error)
-            broadcastLog("ERROR: \${error.message ?: error.javaClass.simpleName}")
+            broadcastLog("ERROR: ${error.message ?: error.javaClass.simpleName}")
             updateNotification("Server failed")
         } finally {
             isRunning = false
@@ -150,7 +150,7 @@ class PumpkinService : Service() {
                 val timestamp = System.currentTimeMillis()
                 val backupTarget = File(backupsDir, "world_backup_$timestamp")
                 worldDir.copyRecursively(backupTarget, overwrite = true)
-                broadcastLog("Backup complete: \${backupTarget.name}")
+                broadcastLog("Backup complete: ${backupTarget.name}")
 
                 val existingBackups = backupsDir.listFiles { file -> file.isDirectory }
                     ?.sortedByDescending { it.lastModified() }
@@ -158,17 +158,17 @@ class PumpkinService : Service() {
                 if (existingBackups.size > 2) {
                     existingBackups.drop(2).forEach { oldBackup ->
                         oldBackup.deleteRecursively()
-                        broadcastLog("Deleted old backup: \${oldBackup.name}")
+                        broadcastLog("Deleted old backup: ${oldBackup.name}")
                     }
                 }
             } catch (error: Exception) {
-                broadcastLog("Backup failed: \${error.message}")
+                broadcastLog("Backup failed: ${error.message}")
             }
         }.start()
     }
 
     private fun broadcastLog(line: String) {
-        val cleanLine = line.replace(Regex("\\u001B\\\\[[;\\\\d]*m"), "")
+        val cleanLine = line.replace(Regex("\u001B\\[[;\\d]*m"), "")
         val intent = Intent("com.blizzardfire.pumpkinlauncher.LOG_UPDATE")
         intent.putExtra("line", cleanLine)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
