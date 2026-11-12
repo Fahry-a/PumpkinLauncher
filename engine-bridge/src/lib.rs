@@ -29,6 +29,20 @@ static RAYON_INIT: Once = Once::new();
 static ACTIVE_SERVER: OnceLock<Mutex<Option<Arc<Server>>>> = OnceLock::new();
 static RUNTIME_HANDLE: OnceLock<Mutex<Option<Handle>>> = OnceLock::new();
 
+struct RunningGuard;
+
+impl Drop for RunningGuard {
+    fn drop(&mut self) {
+        if let Ok(mut slot) = server_slot().lock() {
+            *slot = None;
+        }
+        if let Ok(mut slot) = runtime_slot().lock() {
+            *slot = None;
+        }
+        RUNNING.store(false, Ordering::Release);
+    }
+}
+
 fn server_slot() -> &'static Mutex<Option<Arc<Server>>> {
     ACTIVE_SERVER.get_or_init(|| Mutex::new(None))
 }
@@ -146,6 +160,7 @@ pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativ
     let spawned = thread::Builder::new()
         .name("Pumpkin-Engine".to_string())
         .spawn(move || {
+            let _running_guard = RunningGuard;
             if let Err(error) = run_engine(work_dir, log_file) {
                 tracing::error!("Pumpkin engine stopped with an error: {error}");
             }
