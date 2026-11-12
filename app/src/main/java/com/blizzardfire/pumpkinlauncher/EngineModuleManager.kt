@@ -2,6 +2,7 @@ package com.blizzardfire.pumpkinlauncher
 
 import android.content.Context
 import android.os.Build
+import android.os.Process
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -38,8 +39,9 @@ object EngineModuleManager {
     private val supportedAbis = setOf("arm64-v8a", "armeabi-v7a", "x86_64")
 
     fun deviceAbi(): String {
-        return Build.SUPPORTED_ABIS.firstOrNull { it in supportedAbis }
-            ?: throw IllegalStateException("This device does not have a supported Android ABI.")
+        val processAbis = if (Process.is64Bit()) Build.SUPPORTED_64_BIT_ABIS else Build.SUPPORTED_32_BIT_ABIS
+        return processAbis.firstOrNull { it in supportedAbis }
+            ?: throw IllegalStateException("This app process does not have a supported Android ABI.")
     }
 
     fun fetchReleases(channel: String): List<EngineRelease> {
