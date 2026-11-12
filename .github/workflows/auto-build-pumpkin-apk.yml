@@ -85,7 +85,7 @@ jobs:
             if [[ "${channel}" == "nightly" ]]; then
               ref="master"
             else
-              ref="$(gh api repos/Pumpkin-MC/Pumpkin/releases --paginate --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' | head -n1)"
+              ref="$(gh api repos/Pumpkin-MC/Pumpkin/releases --jq '[.[] | select(.draft == false and .prerelease == false)] | .[0].tag_name')"
               if [[ -z "${ref}" ]]; then
                 ref="master"
               fi
