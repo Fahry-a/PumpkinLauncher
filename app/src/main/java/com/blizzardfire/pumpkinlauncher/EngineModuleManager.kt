@@ -111,6 +111,9 @@ object EngineModuleManager {
 
         val destination = File(versionDir, "libpumpkin_engine.so")
         if (destination.isFile && sha256(destination) == expectedSha256) {
+            if (destination.canWrite() && !destination.setReadOnly()) {
+                throw IllegalStateException("Could not make the installed engine library read-only.")
+            }
             writeMetadata(versionDir, manifest, abi, release.tagName)
             return InstalledEngine(
                 manifest.optString("version", release.tagName),
@@ -229,7 +232,7 @@ object EngineModuleManager {
                 digest.update(buffer, 0, count)
             }
         }
-        return digest.digest().joinToString("") { "%02x".format(it) }
+        return digest.digest().joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
     }
 
     private fun openConnection(url: String): HttpURLConnection {
