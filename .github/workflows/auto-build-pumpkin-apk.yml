@@ -46,7 +46,7 @@ permissions:
 
 concurrency:
   group: pumpkin-engine-android-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 jobs:
   resolve-source:
