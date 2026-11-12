@@ -9,7 +9,7 @@ name = "pumpkin_engine"
 crate-type = ["cdylib"]
 
 [dependencies]
-jni = "0.21.1"
+jni = { version = "0.21.1", default-features = false }
 tracing = "0.1.44"
 pumpkin-core = { path = "../Pumpkin/crates/pumpkin-core" }
 pumpkin-config = { path = "../Pumpkin/crates/pumpkin-config" }
