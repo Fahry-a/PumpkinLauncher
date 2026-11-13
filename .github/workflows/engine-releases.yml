@@ -69,7 +69,10 @@ jobs:
             gh api "repos/${our_repo}/releases/tags/nightly" 2>/dev/null \
               | jq -r '.body // empty' || true
           )"
-          if [[ "${nightly_body}" == *"Source: ${head_sha}"* ]]; then
+          # Scheduled runs avoid rebuilding an unchanged upstream commit.
+          # Manual dispatches deliberately bypass this guard so a failed mirror
+          # upload can be retried with a fresh immutable package version.
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" && "${nightly_body}" == *"Source: ${head_sha}"* ]]; then
             echo "mode=skip" >> "${GITHUB_OUTPUT}"
             echo "Nightly for ${head_sha} is already published; nothing to build."
             exit 0
@@ -79,7 +82,9 @@ jobs:
           {
             echo "mode=nightly"
             echo "tag=nightly"
-            echo "version=nightly-${short_sha}"
+            # FOENUI PM package versions are immutable. Include the workflow
+            # run and attempt so retries never collide with an earlier upload.
+            echo "version=nightly-${short_sha}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
             echo "source_ref=master"
             echo "source_sha=${head_sha}"
           } >> "${GITHUB_OUTPUT}"
@@ -216,9 +221,9 @@ jobs:
             echo "::notice::FOENUI_UPLOAD_TOKEN is not set; skipping Foenui PM uploads."
             exit 0
           fi
-          if ! gh api "repos/foenui/foenui-pm" > /dev/null 2>&1; then
+          if ! gh api "repos/foenui/foenui-pm-action" > /dev/null 2>&1; then
             echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::foenui/foenui-pm action repo is not accessible; skipping Foenui PM uploads."
+            echo "::notice::foenui/foenui-pm-action is not accessible; skipping Foenui PM uploads."
             exit 0
           fi
           echo "enabled=true" >> "${GITHUB_OUTPUT}"
@@ -227,48 +232,42 @@ jobs:
         id: upload_a64
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-arm64-v8a.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: arm64-v8a
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Upload armeabi-v7a to Foenui PM
         id: upload_a32
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-armeabi-v7a.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: armeabi-v7a
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Upload x86_64 to Foenui PM
         id: upload_x64
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-x86_64.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: x86_64
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Generate engine manifest
