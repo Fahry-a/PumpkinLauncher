@@ -206,8 +206,9 @@ jobs:
           path: dist
           merge-multiple: true
 
-      # Foenui publishing is best-effort: skip cleanly when the action repo is
-      # private/unreachable or the token is missing, and never fail the run.
+      # Engine releases are valid only when every ABI package is published
+      # to Foenui PM. Missing credentials or an unavailable Action must fail
+      # before a manifest or GitHub Release can be created.
       - name: Check Foenui PM availability
         id: foenui
         env:
@@ -216,22 +217,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${FOENUI_UPLOAD_TOKEN}" ]]; then
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::FOENUI_UPLOAD_TOKEN is not set; skipping Foenui PM uploads."
-            exit 0
+          if [[ -z "$FOENUI_UPLOAD_TOKEN" ]]; then
+            echo "::error::FOENUI_UPLOAD_TOKEN is required for engine releases."
+            exit 1
           fi
           if ! gh api "repos/foenui/foenui-pm-action" > /dev/null 2>&1; then
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::foenui/foenui-pm-action is not accessible; skipping Foenui PM uploads."
-            exit 0
+            echo "::error::foenui/foenui-pm-action is not accessible; refusing to publish an incomplete engine release."
+            exit 1
           fi
-          echo "enabled=true" >> "${GITHUB_OUTPUT}"
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload arm64-v8a to Foenui PM
         id: upload_a64
         if: steps.foenui.outputs.enabled == 'true'
-        continue-on-error: true
         uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-arm64-v8a.zip
@@ -245,7 +243,6 @@ jobs:
       - name: Upload armeabi-v7a to Foenui PM
         id: upload_a32
         if: steps.foenui.outputs.enabled == 'true'
-        continue-on-error: true
         uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-armeabi-v7a.zip
@@ -259,7 +256,6 @@ jobs:
       - name: Upload x86_64 to Foenui PM
         id: upload_x64
         if: steps.foenui.outputs.enabled == 'true'
-        continue-on-error: true
         uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-x86_64.zip
@@ -269,6 +265,23 @@ jobs:
           arch: x86_64
           overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
+
+      - name: Validate all Foenui PM upload results
+        env:
+          A64_URL: ${{ steps.upload_a64.outputs.url }}
+          A32_URL: ${{ steps.upload_a32.outputs.url }}
+          X64_URL: ${{ steps.upload_x64.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for entry in "arm64-v8a:$A64_URL" "armeabi-v7a:$A32_URL" "x86_64:$X64_URL"; do
+            IFS=: read -r abi url <<< "$entry"
+            if [[ -z "$url" || ! "$url" =~ ^https?://[^[:space:]]+$ ]]; then
+              echo "::error::Foenui PM upload for $abi did not return a valid URL."
+              exit 1
+            fi
+            echo "Validated $abi: $url"
+          done
 
       - name: Generate engine manifest
         env:
