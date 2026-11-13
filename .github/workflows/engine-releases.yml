@@ -201,15 +201,32 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Verify Foenui publishing configuration
+      # Foenui publishing is best-effort: skip cleanly when the action repo is
+      # private/unreachable or the token is missing, and never fail the run.
+      - name: Check Foenui PM availability
+        id: foenui
         env:
+          GH_TOKEN: ${{ github.token }}
           FOENUI_UPLOAD_TOKEN: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
+        shell: bash
         run: |
           set -euo pipefail
-          : "${FOENUI_UPLOAD_TOKEN:?Set FOENUI_UPLOAD_TOKEN with package:write access to user/fahry-a/pumpkin-engine}"
+          if [[ -z "${FOENUI_UPLOAD_TOKEN}" ]]; then
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice::FOENUI_UPLOAD_TOKEN is not set; skipping Foenui PM uploads."
+            exit 0
+          fi
+          if ! gh api "repos/foenui/foenui-pm" > /dev/null 2>&1; then
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice::foenui/foenui-pm action repo is not accessible; skipping Foenui PM uploads."
+            exit 0
+          fi
+          echo "enabled=true" >> "${GITHUB_OUTPUT}"
 
       - name: Upload arm64-v8a to Foenui PM
         id: upload_a64
+        if: steps.foenui.outputs.enabled == 'true'
+        continue-on-error: true
         uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
         with:
           source: dist/libpumpkin_engine-arm64-v8a.zip
@@ -224,6 +241,8 @@ jobs:
 
       - name: Upload armeabi-v7a to Foenui PM
         id: upload_a32
+        if: steps.foenui.outputs.enabled == 'true'
+        continue-on-error: true
         uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
         with:
           source: dist/libpumpkin_engine-armeabi-v7a.zip
@@ -238,6 +257,8 @@ jobs:
 
       - name: Upload x86_64 to Foenui PM
         id: upload_x64
+        if: steps.foenui.outputs.enabled == 'true'
+        continue-on-error: true
         uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
         with:
           source: dist/libpumpkin_engine-x86_64.zip
