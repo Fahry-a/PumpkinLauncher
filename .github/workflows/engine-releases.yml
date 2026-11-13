@@ -69,7 +69,10 @@ jobs:
             gh api "repos/${our_repo}/releases/tags/nightly" 2>/dev/null \
               | jq -r '.body // empty' || true
           )"
-          if [[ "${nightly_body}" == *"Source: ${head_sha}"* ]]; then
+          # Scheduled runs avoid rebuilding an unchanged upstream commit.
+          # Manual dispatches deliberately bypass this guard so a failed mirror
+          # upload can be retried with a fresh immutable package version.
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" && "${nightly_body}" == *"Source: ${head_sha}"* ]]; then
             echo "mode=skip" >> "${GITHUB_OUTPUT}"
             echo "Nightly for ${head_sha} is already published; nothing to build."
             exit 0
@@ -79,7 +82,9 @@ jobs:
           {
             echo "mode=nightly"
             echo "tag=nightly"
-            echo "version=nightly-${short_sha}"
+            # FOENUI PM package versions are immutable. Include the workflow
+            # run and attempt so retries never collide with an earlier upload.
+            echo "version=nightly-${short_sha}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
             echo "source_ref=master"
             echo "source_sha=${head_sha}"
           } >> "${GITHUB_OUTPUT}"
