@@ -78,13 +78,12 @@ jobs:
             exit 0
           fi
 
-          short_sha="${head_sha:0:12}"
           {
             echo "mode=nightly"
             echo "tag=nightly"
-            # FOENUI PM package versions are immutable. Include the workflow
-            # run and attempt so retries never collide with an earlier upload.
-            echo "version=nightly-${short_sha}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            # The rolling nightly channel (foenui-pm-action @73cbb72) replaces
+            # the previous nightly package per os/arch, so retries never collide.
+            echo "version=nightly"
             echo "source_ref=master"
             echo "source_sha=${head_sha}"
           } >> "${GITHUB_OUTPUT}"
@@ -230,7 +229,7 @@ jobs:
       - name: Upload arm64-v8a to Foenui PM
         id: upload_a64
         if: steps.foenui.outputs.enabled == 'true'
-        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
+        uses: foenui/foenui-pm-action@73cbb7296ad377688b3f3a19819a0825a6d38db9
         with:
           source: dist/libpumpkin_engine-arm64-v8a.zip
           package: pumpkin-engine
@@ -243,7 +242,7 @@ jobs:
       - name: Upload armeabi-v7a to Foenui PM
         id: upload_a32
         if: steps.foenui.outputs.enabled == 'true'
-        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
+        uses: foenui/foenui-pm-action@73cbb7296ad377688b3f3a19819a0825a6d38db9
         with:
           source: dist/libpumpkin_engine-armeabi-v7a.zip
           package: pumpkin-engine
@@ -256,7 +255,7 @@ jobs:
       - name: Upload x86_64 to Foenui PM
         id: upload_x64
         if: steps.foenui.outputs.enabled == 'true'
-        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
+        uses: foenui/foenui-pm-action@73cbb7296ad377688b3f3a19819a0825a6d38db9
         with:
           source: dist/libpumpkin_engine-x86_64.zip
           package: pumpkin-engine
