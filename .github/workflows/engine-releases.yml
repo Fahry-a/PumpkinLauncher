@@ -232,48 +232,42 @@ jobs:
         id: upload_a64
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-arm64-v8a.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: arm64-v8a
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Upload armeabi-v7a to Foenui PM
         id: upload_a32
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-armeabi-v7a.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: armeabi-v7a
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Upload x86_64 to Foenui PM
         id: upload_x64
         if: steps.foenui.outputs.enabled == 'true'
         continue-on-error: true
-        uses: foenui/foenui-pm@ad543a9b29fad1a42f6399c6e0730e8eac56d03b
+        uses: foenui/foenui-pm-action@93f50d1e71a65548cfc5def893ebe275c8e59e77
         with:
           source: dist/libpumpkin_engine-x86_64.zip
-          owner: fahry-a
-          organization: "false"
           package: pumpkin-engine
           version: ${{ needs.decide.outputs.version }}
           os: android
           arch: x86_64
-          overwrite: true
+          overwrite: false
           token: ${{ secrets.FOENUI_UPLOAD_TOKEN }}
 
       - name: Generate engine manifest
