@@ -221,9 +221,9 @@ jobs:
             echo "::notice::FOENUI_UPLOAD_TOKEN is not set; skipping Foenui PM uploads."
             exit 0
           fi
-          if ! gh api "repos/foenui/foenui-pm" > /dev/null 2>&1; then
+          if ! gh api "repos/foenui/foenui-pm-action" > /dev/null 2>&1; then
             echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::foenui/foenui-pm action repo is not accessible; skipping Foenui PM uploads."
+            echo "::notice::foenui/foenui-pm-action is not accessible; skipping Foenui PM uploads."
             exit 0
           fi
           echo "enabled=true" >> "${GITHUB_OUTPUT}"
