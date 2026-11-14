@@ -38,36 +38,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@color/pumpkin_dark_gray"
-        android:padding="10dp"
-        android:layout_marginBottom="10dp">
-
-        <TextView
-            android:id="@+id/activeStatusText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:fontFamily="@font/sora" />
-
-        <Button
-            android:id="@+id/setActiveButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set Active"
-            android:textColor="@color/pumpkin_black"
-            android:background="@drawable/sticky_pink"
-            app:backgroundTint="@null"
-            android:fontFamily="@font/sora" />
-
-    </LinearLayout>
-
     <Button
         android:id="@+id/serverSettingsButton"
         android:layout_width="match_parent"

@@ -10,7 +10,6 @@ import java.io.File
 
 class ConfigActivity : AppCompatActivity() {
 
-    private lateinit var worldName: String
     private lateinit var configFile: File
     private lateinit var editText: EditText
 
@@ -18,12 +17,12 @@ class ConfigActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_config)
 
-        worldName = intent.getStringExtra("world_name") ?: WorldManager.getActiveWorldName(this)
-        // server.properties must live where the engine runs.
-        val worldDir = ServerLocation.getServerDir(this)
-        configFile = WorldManager.getConfigFile(worldDir)
+        val serverDir = ServerLocation.getServerDir(this)
+        val configDir = File(serverDir, "config")
+        if (!configDir.exists()) configDir.mkdirs()
+        configFile = File(configDir, "configuration.toml")
 
-        findViewById<TextView>(R.id.configTitleText).text = "Settings — $worldName"
+        findViewById<TextView>(R.id.configTitleText).text = "Server Configuration"
         editText = findViewById(R.id.configEditText)
 
         if (configFile.exists()) {

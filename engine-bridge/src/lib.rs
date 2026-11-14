@@ -53,7 +53,7 @@ fn apply_memory_limit(limit_mb: i32) {
         .and_then(|line| line.split_whitespace().nth(1).and_then(|v| v.parse::<u64>().ok()))
         .unwrap_or(0)
         * 4; // pages to KB on every Android ABI we ship
-    if requested < current_vm_kb * 1024 + 64 * 1024 * 1024 {
+    if u64::from(requested) < current_vm_kb * 1024 + 64 * 1024 * 1024 {
         tracing::warn!(
             "RAM limit {limit_mb} MB is below current usage ({} MB); leaving the limit unchanged.",
             current_vm_kb / 1024

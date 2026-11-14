@@ -6,6 +6,14 @@ The top section is the current release. Its version must match the `VERSION`
 file; when both agree, `auto-tag.yml` creates the `v<version>` tag and the
 release notes for that version are taken from its section below.
 
+## [0.1.1] - 2026-11-15
+
+### Fixed
+
+- Engine bridge: fixed type conversion in RAM address space rlimit check.
+- UI & Navigation: cleaned up legacy world slot selection in Plugins and Config screens to unify with Server Manager directory structure.
+- Service: increased backup retention history before pruning old world backups.
+
 ## [0.1.0] - 2026-11-14
 
 ### Added

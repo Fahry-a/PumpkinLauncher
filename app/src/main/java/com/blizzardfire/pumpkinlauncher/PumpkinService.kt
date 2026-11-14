@@ -189,8 +189,8 @@ class PumpkinService : Service() {
                 val existingBackups = backupsDir.listFiles { file -> file.isDirectory }
                     ?.sortedByDescending { it.lastModified() }
                     ?: emptyList()
-                if (existingBackups.size > 2) {
-                    existingBackups.drop(2).forEach { oldBackup ->
+                if (existingBackups.size > 5) {
+                    existingBackups.drop(5).forEach { oldBackup ->
                         oldBackup.deleteRecursively()
                         broadcastLog("Deleted old backup: ${oldBackup.name}")
                     }

@@ -20,10 +20,7 @@ class PluginsActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PluginsAdapter
-    private lateinit var worldName: String
-    private lateinit var worldDir: File
-    private lateinit var activeStatusText: TextView
-    private lateinit var setActiveButton: Button
+    private lateinit var serverDir: File
 
     private val pluginPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) importPluginFromUri(uri)
@@ -33,19 +30,10 @@ class PluginsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plugins)
 
-        worldName = intent.getStringExtra("world_name") ?: WorldManager.getActiveWorldName(this)
-        // The engine runs from the server folder, so that is where plugins live.
-        worldDir = ServerLocation.getServerDir(this)
+        // The engine runs from the server folder, so plugins live in <serverDir>/plugins
+        serverDir = ServerLocation.getServerDir(this)
 
-        findViewById<TextView>(R.id.pluginsTitleText).text = "Plugins — $worldName"
-
-        activeStatusText = findViewById(R.id.activeStatusText)
-        setActiveButton = findViewById(R.id.setActiveButton)
-
-        setActiveButton.setOnClickListener {
-            WorldManager.setActiveWorldName(this, worldName)
-            updateActiveRow()
-        }
+        findViewById<TextView>(R.id.pluginsTitleText).text = "Plugins"
 
         recyclerView = findViewById(R.id.pluginsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -60,33 +48,13 @@ class PluginsActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.serverSettingsButton).setOnClickListener {
             val intent = Intent(this, ConfigActivity::class.java)
-            intent.putExtra("world_name", worldName)
             startActivity(intent)
         }
-
-        updateActiveRow()
     }
 
     override fun onResume() {
         super.onResume()
         adapter.refresh()
-    }
-
-    private fun updateActiveRow() {
-        // The active-world toggle only applies to the legacy worlds folder.
-        if (ServerLocation.isCustom(this)) {
-            findViewById<TextView>(R.id.activeStatusText).visibility = View.GONE
-            findViewById<Button>(R.id.setActiveButton).visibility = View.GONE
-            return
-        }
-        val isActive = worldName == WorldManager.getActiveWorldName(this)
-        if (isActive) {
-            activeStatusText.text = "This world is currently active"
-            setActiveButton.visibility = View.GONE
-        } else {
-            activeStatusText.text = "Not the active world"
-            setActiveButton.visibility = View.VISIBLE
-        }
     }
 
     private fun importPluginFromUri(uri: Uri) {
@@ -108,7 +76,7 @@ class PluginsActivity : AppCompatActivity() {
                 return
             }
 
-            val targetFile = File(PluginManager.getPluginsDir(worldDir), fileName)
+            val targetFile = File(PluginManager.getPluginsDir(serverDir), fileName)
             contentResolver.openInputStream(uri)?.use { input ->
                 targetFile.outputStream().use { output -> input.copyTo(output) }
             }
@@ -124,10 +92,10 @@ class PluginsActivity : AppCompatActivity() {
     }
 
     inner class PluginsAdapter : RecyclerView.Adapter<PluginsAdapter.ViewHolder>() {
-        private var plugins: List<String> = PluginManager.listPlugins(worldDir)
+        private var plugins: List<String> = PluginManager.listPlugins(serverDir)
 
         fun refresh() {
-            plugins = PluginManager.listPlugins(worldDir)
+            plugins = PluginManager.listPlugins(serverDir)
             notifyDataSetChanged()
         }
 
@@ -150,7 +118,7 @@ class PluginsActivity : AppCompatActivity() {
                     .setTitle("Remove Plugin")
                     .setMessage("Remove \"$name\"? Restart the server for this to take effect.")
                     .setPositiveButton("Remove") { _, _ ->
-                        PluginManager.deletePlugin(worldDir, name)
+                        PluginManager.deletePlugin(serverDir, name)
                         refresh()
                     }
                     .setNegativeButton("Cancel", null)
