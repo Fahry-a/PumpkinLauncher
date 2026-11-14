@@ -23,7 +23,20 @@ object PumpkinNative {
         loadedPath = path
     }
 
+    /**
+     * Starts the engine, applying an optional RAM limit (MB) when the loaded
+     * library exports the newer entry point. Older engines ignore the limit.
+     */
+    fun start(workDir: String, logFile: String, ramLimitMb: Int): Int {
+        return try {
+            nativeStartLimited(workDir, logFile, ramLimitMb)
+        } catch (_: UnsatisfiedLinkError) {
+            nativeStart(workDir, logFile)
+        }
+    }
+
     @JvmStatic external fun nativeStart(workDir: String, logFile: String): Int
+    @JvmStatic external fun nativeStartLimited(workDir: String, logFile: String, ramLimitMb: Int): Int
     @JvmStatic external fun nativeSendCommand(command: String): Boolean
     @JvmStatic external fun nativeStop(): Boolean
     @JvmStatic external fun nativeIsRunning(): Boolean

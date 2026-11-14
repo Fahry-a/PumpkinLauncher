@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pumpkin_black"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="12dp">
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back"
+            android:textColor="@color/pumpkin_black"
+            android:background="@drawable/sticky_orange"
+            app:backgroundTint="@null"
+            android:fontFamily="@font/sora" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:text="Server Manager"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/sora" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:id="@+id/locationTabButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Location"
+            android:textColor="@color/pumpkin_black"
+            android:background="@drawable/sticky_orange"
+            app:backgroundTint="@null"
+            android:fontFamily="@font/sora" />
+
+        <Button
+            android:id="@+id/filesTabButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:text="Files"
+            android:textColor="@color/pumpkin_black"
+            android:background="@drawable/sticky_blue"
+            app:backgroundTint="@null"
+            android:fontFamily="@font/sora" />
+
+        <Button
+            android:id="@+id/settingsTabButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Settings"
+            android:textColor="@color/pumpkin_black"
+            android:background="@drawable/sticky_purple"
+            app:backgroundTint="@null"
+            android:fontFamily="@font/sora" />
+    </LinearLayout>
+
+    <!-- LOCATION TAB -->
+    <ScrollView
+        android:id="@+id/locationPage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/pumpkin_dark_gray"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SERVER FOLDER"
+                    android:textColor="@color/white"
+                    android:alpha="0.7"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/serverPathText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/pumpkin_orange"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/storageStatusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/grantAccessButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Grant all files access"
+                android:textColor="@color/pumpkin_black"
+                android:textStyle="bold"
+                android:background="@drawable/sticky_yellow"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="QUICK LOCATIONS"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/pumpkinFolderButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="/storage/emulated/0/PumpkinLauncher"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="13sp"
+                android:background="@drawable/sticky_green"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/browseFolderButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Browse… (from Files tab)"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="13sp"
+                android:background="@drawable/sticky_blue"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/resetFolderButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Reset to default (app folder)"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="13sp"
+                android:background="@drawable/sticky_pink"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="The server runs inside this folder. Use the Files tab to open a folder, then tap “Set as server folder”."
+                android:textColor="@color/white"
+                android:alpha="0.6"
+                android:textSize="11sp"
+                android:fontFamily="@font/sora" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- FILES TAB -->
+    <LinearLayout
+        android:id="@+id/filesPage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/pumpkin_dark_gray"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/upButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↑"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_orange"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:id="@+id/currentPathText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:ellipsize="start"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fileRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/newFolderButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="+ Folder"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="12sp"
+                android:background="@drawable/sticky_green"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/newFileButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="4dp"
+                android:text="+ File"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="12sp"
+                android:background="@drawable/sticky_blue"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/pasteButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Paste"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="12sp"
+                android:background="@drawable/sticky_purple"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/setServerFolderButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Set as server folder"
+            android:textColor="@color/pumpkin_black"
+            android:textStyle="bold"
+            android:background="@drawable/sticky_yellow"
+            app:backgroundTint="@null"
+            android:fontFamily="@font/sora" />
+    </LinearLayout>
+
+    <!-- SETTINGS TAB -->
+    <ScrollView
+        android:id="@+id/settingsPage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RAM LIMIT (MB, 0 = unlimited)"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <EditText
+                android:id="@+id/ramLimitInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="e.g. 1024"
+                android:textColorHint="#888888"
+                android:textColor="@color/white"
+                android:inputType="number"
+                android:backgroundTint="@color/pumpkin_orange"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="PRE-LAUNCH COMMAND"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <EditText
+                android:id="@+id/prelaunchInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="shell command run before the engine starts"
+                android:textColorHint="#888888"
+                android:textColor="@color/white"
+                android:inputType="text"
+                android:backgroundTint="@color/pumpkin_orange"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="WRAPPER COMMAND"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <EditText
+                android:id="@+id/wrapperInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="run as a shell command before start (engine is in-process)"
+                android:textColorHint="#888888"
+                android:textColor="@color/white"
+                android:inputType="text"
+                android:backgroundTint="@color/pumpkin_orange"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="ARGS"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <EditText
+                android:id="@+id/argsInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="appended to the wrapper command"
+                android:textColorHint="#888888"
+                android:textColor="@color/white"
+                android:inputType="text"
+                android:backgroundTint="@color/pumpkin_orange"
+                android:fontFamily="@font/sora" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="The Pumpkin engine loads as a .so inside the app process, so there is no separate process to wrap. Wrapper + args run as one shell command before the engine starts. RAM limit is enforced by the engine bridge via setrlimit."
+                android:textColor="@color/white"
+                android:alpha="0.55"
+                android:textSize="11sp"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/saveSettingsButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Save Settings"
+                android:textColor="@color/pumpkin_black"
+                android:textStyle="bold"
+                android:background="@drawable/sticky_green"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

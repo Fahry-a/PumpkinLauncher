@@ -34,7 +34,8 @@ class PluginsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_plugins)
 
         worldName = intent.getStringExtra("world_name") ?: WorldManager.getActiveWorldName(this)
-        worldDir = WorldManager.getWorldDir(this, worldName)
+        // The engine runs from the server folder, so that is where plugins live.
+        worldDir = ServerLocation.getServerDir(this)
 
         findViewById<TextView>(R.id.pluginsTitleText).text = "Plugins — $worldName"
 
@@ -72,6 +73,12 @@ class PluginsActivity : AppCompatActivity() {
     }
 
     private fun updateActiveRow() {
+        // The active-world toggle only applies to the legacy worlds folder.
+        if (ServerLocation.isCustom(this)) {
+            findViewById<TextView>(R.id.activeStatusText).visibility = View.GONE
+            findViewById<Button>(R.id.setActiveButton).visibility = View.GONE
+            return
+        }
         val isActive = worldName == WorldManager.getActiveWorldName(this)
         if (isActive) {
             activeStatusText.text = "This world is currently active"

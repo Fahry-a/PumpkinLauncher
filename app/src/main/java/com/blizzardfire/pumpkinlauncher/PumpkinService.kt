@@ -61,7 +61,18 @@ class PumpkinService : Service() {
                 ?: throw IllegalStateException("No Pumpkin engine is installed. Open Engine Manager first.")
             PumpkinNative.load(engineLibrary)
 
-            val workDir = WorldManager.getActiveWorldDir(this)
+            val settings = ServerSettings.load(this)
+            runShellHook(settings.prelaunchCommand, "pre-launch")
+            // The engine runs in-process, so a wrapper cannot wrap it; the hook runs
+            // as a plain shell command before the engine starts instead.
+            runShellHook(
+                listOf(settings.wrapperCommand, settings.argsCommand)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" "),
+                "wrapper"
+            )
+
+            val workDir = ServerLocation.getServerDir(this)
             val logFile = File(filesDir, "engine-logs/latest.log")
             logFile.parentFile?.mkdirs()
             // The engine redirects its stdout into this file, so each session starts clean.
@@ -69,7 +80,7 @@ class PumpkinService : Service() {
             val initialOffset = 0L
 
             broadcastLog("Starting Pumpkin engine ${EngineModuleManager.activeVersion(this) ?: ""}...")
-            val startResult = PumpkinNative.nativeStart(workDir.absolutePath, logFile.absolutePath)
+            val startResult = PumpkinNative.start(workDir.absolutePath, logFile.absolutePath, settings.ramLimitMb)
             if (startResult != 0) {
                 throw IllegalStateException("Native engine refused to start (code $startResult).")
             }
@@ -96,6 +107,22 @@ class PumpkinService : Service() {
             isServerActive = false
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
+        }
+    }
+
+    /** Runs a user-supplied shell hook before the engine starts; failures are logged, not fatal. */
+    private fun runShellHook(command: String, label: String) {
+        if (command.isBlank()) return
+        broadcastLog("Running $label command: $command")
+        try {
+            val process = ProcessBuilder("sh", "-c", command)
+                .redirectErrorStream(true)
+                .start()
+            process.inputStream.bufferedReader().forEachLine { line -> broadcastLog("[$label] $line") }
+            val exit = process.waitFor()
+            if (exit != 0) broadcastLog("WARN: $label command exited with code $exit")
+        } catch (error: Exception) {
+            broadcastLog("WARN: $label command failed: ${error.message}")
         }
     }
 
@@ -145,7 +172,7 @@ class PumpkinService : Service() {
     fun backupWorld() {
         Thread {
             try {
-                val workDir = WorldManager.getActiveWorldDir(this)
+                val workDir = ServerLocation.getServerDir(this)
                 val worldDir = File(workDir, "world")
                 if (!worldDir.exists()) {
                     broadcastLog("Backup failed: world folder not found")

@@ -1,226 +1,413 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/pumpkin_black"
-    android:padding="12dp">
+    android:background="@color/pumpkin_black">
 
     <LinearLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="12dp">
-
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@mipmap/ic_pumpkin"
-            android:layout_marginEnd="8dp"
-            android:contentDescription="Pumpkin logo" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Pumpkin Server"
-            android:textColor="@color/white"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/sora" />
-
-        <Button
-            android:id="@+id/menuButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="☰"
-            android:textColor="@color/pumpkin_black"
-            android:textSize="20sp"
-            android:background="@drawable/sticky_orange"
-            app:backgroundTint="@null"
-            android:fontFamily="@font/sora" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@color/pumpkin_dark_gray"
-        android:padding="10dp">
-
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Status: Stopped"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:fontFamily="@font/sora" />
-
-        <Button
-            android:id="@+id/startStopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start"
-            android:textColor="@color/pumpkin_black"
-            android:background="@drawable/sticky_orange"
-            app:backgroundTint="@null"
-            android:fontFamily="@font/sora" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:weightSum="2">
-
-        <LinearLayout
-            android:id="@+id/playersCard"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="5dp"
-            android:orientation="vertical"
-            android:background="@drawable/sticky_blue"
-            android:padding="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Players Online"
-                android:textColor="@color/pumpkin_black"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:fontFamily="@font/sora" />
-
-            <TextView
-                android:id="@+id/playersCountText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="@color/pumpkin_black"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/sora" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/uptimeCard"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="5dp"
-            android:orientation="vertical"
-            android:background="@drawable/sticky_green"
-            android:padding="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Uptime"
-                android:textColor="@color/pumpkin_black"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:fontFamily="@font/sora" />
-
-            <TextView
-                android:id="@+id/uptimeText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00:00"
-                android:textColor="@color/pumpkin_black"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/sora" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@drawable/terminal_bg">
+        android:background="@color/pumpkin_black"
+        android:padding="12dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:paddingBottom="12dp">
 
-            <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_square_red"
-                android:layout_marginEnd="6dp" />
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@mipmap/ic_pumpkin"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Pumpkin logo" />
 
-            <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_square_yellow"
-                android:layout_marginEnd="6dp" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pumpkin Server"
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
 
-            <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_square_green" />
+            <Button
+                android:id="@+id/menuButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☰"
+                android:textColor="@color/pumpkin_black"
+                android:textSize="20sp"
+                android:background="@drawable/sticky_orange"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
 
         </LinearLayout>
 
-        <ScrollView
-            android:id="@+id/consoleScroll"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/pumpkin_dark_gray"
+            android:padding="10dp">
 
             <TextView
-                android:id="@+id/consoleText"
+                android:id="@+id/statusText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Status: Stopped"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/startStopButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_orange"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Save"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_blue"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/restartButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="4dp"
+                android:text="Restart"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_yellow"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+
+            <Button
+                android:id="@+id/backupButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Backup"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_green"
+                app:backgroundTint="@null"
+                android:fontFamily="@font/sora" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:id="@+id/playersCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:orientation="vertical"
+                android:background="@drawable/sticky_blue"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Players"
+                    android:textColor="@color/pumpkin_black"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/playersCountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/pumpkin_black"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/uptimeCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="4dp"
+                android:orientation="vertical"
+                android:background="@drawable/sticky_green"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Uptime"
+                    android:textColor="@color/pumpkin_black"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/uptimeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00"
+                    android:textColor="@color/pumpkin_black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ramCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:orientation="vertical"
+                android:background="@drawable/sticky_purple"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RAM"
+                    android:textColor="@color/pumpkin_black"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/ramText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/pumpkin_black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:orientation="vertical"
+                android:background="@drawable/sticky_orange"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CPU"
+                    android:textColor="@color/pumpkin_black"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/cpuText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/pumpkin_black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:orientation="vertical"
+                android:background="@drawable/sticky_pink"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Network"
+                    android:textColor="@color/pumpkin_black"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+
+                <TextView
+                    android:id="@+id/netText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/pumpkin_black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/terminal_bg">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/console_green"
-                android:textSize="11sp"
-                android:padding="8dp"
-                android:fontFamily="@font/sora" />
-        </ScrollView>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_square_red"
+                    android:layout_marginEnd="6dp" />
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_square_yellow"
+                    android:layout_marginEnd="6dp" />
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_square_green" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/pauseScrollButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pause"
+                    android:textSize="11sp"
+                    android:textColor="@color/pumpkin_black"
+                    android:background="@drawable/sticky_yellow"
+                    app:backgroundTint="@null"
+                    android:fontFamily="@font/sora" />
+
+                <Button
+                    android:id="@+id/copyLogButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:text="Copy"
+                    android:textSize="11sp"
+                    android:textColor="@color/pumpkin_black"
+                    android:background="@drawable/sticky_blue"
+                    app:backgroundTint="@null"
+                    android:fontFamily="@font/sora" />
+
+                <Button
+                    android:id="@+id/clearLogButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Clear"
+                    android:textSize="11sp"
+                    android:textColor="@color/pumpkin_black"
+                    android:background="@drawable/sticky_pink"
+                    app:backgroundTint="@null"
+                    android:fontFamily="@font/sora" />
+
+            </LinearLayout>
+
+            <ScrollView
+                android:id="@+id/consoleScroll"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fillViewport="true">
+
+                <TextView
+                    android:id="@+id/consoleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/console_green"
+                    android:textSize="11sp"
+                    android:padding="8dp"
+                    android:fontFamily="@font/sora" />
+            </ScrollView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+            <EditText
+                android:id="@+id/commandInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter command..."
+                android:textColorHint="#888888"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/pumpkin_orange"
+                android:imeOptions="actionSend"
+                android:inputType="text"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/sendCommandButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                android:textColor="@color/pumpkin_black"
+                android:background="@drawable/sticky_orange"
+                app:backgroundTint="@null" />
+        </LinearLayout>
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="10dp">
+    <include layout="@layout/drawer_panel" />
 
-        <EditText
-            android:id="@+id/commandInput"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Enter command..."
-            android:textColorHint="#888888"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/pumpkin_orange"
-            android:imeOptions="actionSend"
-            android:singleLine="true" />
-
-        <Button
-            android:id="@+id/sendCommandButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send"
-            android:textColor="@color/pumpkin_black"
-            android:background="@drawable/sticky_orange"
-            app:backgroundTint="@null" />
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

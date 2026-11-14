@@ -19,7 +19,8 @@ class ConfigActivity : AppCompatActivity() {
         setContentView(R.layout.activity_config)
 
         worldName = intent.getStringExtra("world_name") ?: WorldManager.getActiveWorldName(this)
-        val worldDir = WorldManager.getWorldDir(this, worldName)
+        // server.properties must live where the engine runs.
+        val worldDir = ServerLocation.getServerDir(this)
         configFile = WorldManager.getConfigFile(worldDir)
 
         findViewById<TextView>(R.id.configTitleText).text = "Settings — $worldName"

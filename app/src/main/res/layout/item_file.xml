@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/drawer_item_bg"
+    android:padding="12dp"
+    android:layout_marginBottom="6dp">
+
+    <TextView
+        android:id="@+id/fileIconText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:textSize="16sp"
+        android:text="📄" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/fileNameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/sora"
+            android:singleLine="true"
+            android:ellipsize="middle" />
+
+        <TextView
+            android:id="@+id/fileSizeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:alpha="0.5"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/fileActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⋯"
+        android:textSize="16sp"
+        android:textColor="@color/pumpkin_black"
+        android:background="@drawable/sticky_yellow"
+        app:backgroundTint="@null"
+        android:fontFamily="@font/sora" />
+
+</LinearLayout>

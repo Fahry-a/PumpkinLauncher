@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawerPanel"
+    android:layout_width="280dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="end"
+    android:orientation="vertical"
+    android:background="@color/pumpkin_dark_gray"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="14dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@mipmap/ic_pumpkin"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="Pumpkin logo" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pumpkin Launcher"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/sora" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="3dp">
+
+                <View
+                    android:id="@+id/drawerStatusDot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_square_red" />
+
+                <TextView
+                    android:id="@+id/drawerStatusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Stopped"
+                    android:textColor="@color/white"
+                    android:alpha="0.7"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/sora" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/navConsole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Console"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:fontFamily="@font/sora"
+        android:background="@drawable/drawer_item_bg"
+        android:padding="14dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/navServerManager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Server Manager"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:fontFamily="@font/sora"
+        android:background="@drawable/drawer_item_bg"
+        android:padding="14dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/navEngine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Engine Manager"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:fontFamily="@font/sora"
+        android:background="@drawable/drawer_item_bg"
+        android:padding="14dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/navPlugins"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Plugins"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:fontFamily="@font/sora"
+        android:background="@drawable/drawer_item_bg"
+        android:padding="14dp"
+        android:layout_marginBottom="8dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="6dp"
+        android:background="@color/pumpkin_orange"
+        android:alpha="0.4" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Worlds are managed from Server Manager → Files."
+        android:textColor="@color/white"
+        android:alpha="0.5"
+        android:textSize="11sp"
+        android:fontFamily="@font/sora" />
+
+</LinearLayout>

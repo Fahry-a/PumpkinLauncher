@@ -35,6 +35,64 @@ static LOGGER_INIT: Once = Once::new();
 static RAYON_INIT: Once = Once::new();
 static ACTIVE_SERVER: OnceLock<Mutex<Option<Arc<Server>>>> = OnceLock::new();
 static RUNTIME_HANDLE: OnceLock<Mutex<Option<Handle>>> = OnceLock::new();
+static SAVED_RLIMIT: Mutex<Option<libc::rlimit>> = Mutex::new(None);
+
+/// Caps the process address space (MB) so the in-process engine cannot eat all
+/// RAM. The previous limit is restored when the engine stops, because the
+/// launcher UI shares this process.
+fn apply_memory_limit(limit_mb: i32) {
+    if limit_mb <= 0 {
+        return;
+    }
+    let requested = limit_mb as libc::rlim_t * 1024 * 1024;
+
+    // Refuse a limit below what the process already maps; malloc would fail
+    // immediately and take the whole app down with it.
+    let current_vm_kb = fs::read_to_string("/proc/self/statm")
+        .ok()
+        .and_then(|line| line.split_whitespace().nth(1).and_then(|v| v.parse::<u64>().ok()))
+        .unwrap_or(0)
+        * 4; // pages to KB on every Android ABI we ship
+    if requested < current_vm_kb * 1024 + 64 * 1024 * 1024 {
+        tracing::warn!(
+            "RAM limit {limit_mb} MB is below current usage ({} MB); leaving the limit unchanged.",
+            current_vm_kb / 1024
+        );
+        return;
+    }
+
+    // SAFETY: getrlimit/setrlimit only touch this process's own limits.
+    unsafe {
+        let mut current: libc::rlimit = std::mem::zeroed();
+        if libc::getrlimit(libc::RLIMIT_AS, &mut current) != 0 {
+            tracing::warn!("Could not read the current address-space limit.");
+            return;
+        }
+        let mut next = current;
+        next.rlim_cur = requested.min(current.rlim_max);
+        if libc::setrlimit(libc::RLIMIT_AS, &next) != 0 {
+            tracing::warn!("Could not apply the {limit_mb} MB RAM limit.");
+            return;
+        }
+        if let Ok(mut saved) = SAVED_RLIMIT.lock() {
+            *saved = Some(current);
+        }
+        tracing::info!("RAM limit applied: {limit_mb} MB.");
+    }
+}
+
+fn restore_memory_limit() {
+    let saved = SAVED_RLIMIT
+        .lock()
+        .ok()
+        .and_then(|mut slot| slot.take());
+    if let Some(previous) = saved {
+        // SAFETY: restores the limit captured by apply_memory_limit.
+        unsafe {
+            libc::setrlimit(libc::RLIMIT_AS, &previous);
+        }
+    }
+}
 
 struct WorkingDirectoryGuard {
     previous: PathBuf,
@@ -203,10 +261,31 @@ fn run_engine(work_dir: String, log_file: &str) -> Result<(), String> {
 
 #[no_mangle]
 pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativeStart(
+    env: JNIEnv<'_>,
+    class: JClass<'_>,
+    work_dir: JString<'_>,
+    log_file: JString<'_>,
+) -> jint {
+    start_engine(env, class, work_dir, log_file, 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativeStartLimited(
+    env: JNIEnv<'_>,
+    class: JClass<'_>,
+    work_dir: JString<'_>,
+    log_file: JString<'_>,
+    ram_limit_mb: jint,
+) -> jint {
+    start_engine(env, class, work_dir, log_file, ram_limit_mb)
+}
+
+fn start_engine(
     mut env: JNIEnv<'_>,
     _class: JClass<'_>,
     work_dir: JString<'_>,
     log_file: JString<'_>,
+    ram_limit_mb: jint,
 ) -> jint {
     if RUNNING
         .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
@@ -243,7 +322,10 @@ pub extern "system" fn Java_com_blizzardfire_pumpkinlauncher_PumpkinNative_nativ
                     None
                 }
             };
-            if let Err(error) = run_engine(work_dir, &log_file) {
+            apply_memory_limit(ram_limit_mb);
+            let result = run_engine(work_dir, &log_file);
+            restore_memory_limit();
+            if let Err(error) = result {
                 tracing::error!("Pumpkin engine stopped with an error: {error}");
             }
             if let Ok(mut slot) = server_slot().lock() {
