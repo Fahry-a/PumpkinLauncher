@@ -6,6 +6,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -143,6 +144,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout launcher
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
       - name: Download signed APK
         uses: actions/download-artifact@v4
         with:
@@ -156,14 +162,30 @@ jobs:
         run: |
           set -euo pipefail
           sha256sum dist/PumpkinLauncher-"${VERSION}".apk > dist/SHA256SUMS.txt
-          cat > dist/RELEASE_NOTES.md <<EOF
-          ## PumpkinLauncher ${VERSION}
 
-          - Android launcher APK: signed and distributed by this GitHub Release.
-          - Pumpkin engine: published separately through the engine releases workflow.
-
-          See \`SHA256SUMS.txt\` for the APK checksum.
-          EOF
+          # The release body is the CHANGELOG.md section for this version.
+          notes="$(awk -v ver="${VERSION}" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "## [" ver "]") == 1) found = 1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md | sed -e '/./,$!d')"
+          if [[ -z "${notes}" ]]; then
+            echo "::error::CHANGELOG.md has no release section for ${VERSION}."
+            exit 1
+          fi
+          {
+            echo "## PumpkinLauncher ${VERSION}"
+            echo
+            printf '%s\n' "${notes}"
+            echo
+            echo "See \`SHA256SUMS.txt\` for the APK checksum."
+            echo
+            echo "Engine binaries are published separately through the engine releases workflow."
+          } > dist/RELEASE_NOTES.md
+          cat dist/RELEASE_NOTES.md
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64

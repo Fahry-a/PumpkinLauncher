@@ -2,12 +2,19 @@
 
 PumpkinLauncher is an Android control panel for a Pumpkin-MC server. The launcher APK and Pumpkin engine are built and distributed independently.
 
+## Credits and upstream projects
+
+- **Pumpkin server (engine):** [github.com/Pumpkin-MC/Pumpkin](https://github.com/Pumpkin-MC/Pumpkin) — the open-source Minecraft server that this launcher runs. Pumpkin, its assets, and its logo belong to the Pumpkin-MC project; this launcher is an independent, unofficial companion app and is not affiliated with or endorsed by Pumpkin-MC.
+- **Original launcher repository:** [github.com/Blizzardfire/PumpkinLauncher](https://github.com/Blizzardfire/PumpkinLauncher) — the upstream project this repository is forked from. Thanks to Blizzardfire and its contributors for the original launcher.
+
+Bug fixes and features developed here should ideally be contributed upstream to Blizzardfire/PumpkinLauncher, and server issues belong in Pumpkin-MC/Pumpkin.
+
 ## Architecture
 
 - **Launcher APK:** console UI, world/configuration management, plugin management, and engine version manager.
 - **Pumpkin engine module:** a native Android shared library loaded by the launcher at runtime.
-- **Launcher distribution:** signed APKs are published to this repository's GitHub Releases when a new `v*` version tag is pushed.
-- **Engine distribution:** stripped, `zip -9` compressed engine packages are published both as GitHub Release assets and to the Foenui Package Manager (`files.oryn.my.id`).
+- **Launcher distribution:** signed APKs are published to this repository's GitHub Releases when a new `v*` version tag is pushed; `auto-tag.yml` creates that tag automatically from `CHANGELOG.md` + `VERSION`.
+- **Engine distribution:** stripped, `zip -9` compressed engine packages are published both as GitHub Release assets and to the Foenui Package Manager (`pm.foenui.net`).
 
 The engine module is built for:
 
@@ -44,11 +51,19 @@ The engine is not bundled in the APK. Updating Pumpkin engine binaries therefore
 
 ### `releases.yml` — launcher release publication
 
-- Runs only when a new tag matching `v*` is pushed.
+- Runs when a new tag matching `v*` is pushed, and via manual dispatch (used by `auto-tag.yml`).
 - Validates the tag and the Android signing secrets, then builds and signs the release APK.
-- Publishes the signed APK and `SHA256SUMS.txt` to the GitHub Release for that tag.
+- Publishes the signed APK, `SHA256SUMS.txt`, and release notes extracted from the matching `CHANGELOG.md` section to the GitHub Release for that tag.
 - Does not build or publish engine binaries, and does not require the Foenui token.
-- Does not run on ordinary branch pushes, pull requests, schedules, or manual dispatch.
+- Does not run on ordinary branch pushes, pull requests, or schedules.
+
+### `auto-tag.yml` — automatic release tagging
+
+- Runs on pushes to `master` that change `CHANGELOG.md` or `VERSION`, plus manual dispatch.
+- Reads the top release version from `CHANGELOG.md` (`## [x.y.z] - date`) and the version from `VERSION`, then compares them; it fails with an error if they differ.
+- If they match, the tag does not exist yet, and the version is well-formed, it creates an annotated `v<version>` tag and dispatches `releases.yml` (a tag pushed with `GITHUB_TOKEN` does not start other workflows by itself).
+- If the tag already exists, the run is a no-op, so the workflow is safe to re-run.
+- Release notes come from that version's `CHANGELOG.md` section, written by `releases.yml`.
 
 ### `engine-releases.yml` — scheduled engine publication
 
@@ -57,6 +72,11 @@ The engine is not bundled in the APK. Updating Pumpkin engine binaries therefore
 - Otherwise it builds the `nightly` channel from the latest upstream `master` commit, and skips entirely when that commit is already published (idempotent via the `Source: <sha>` line in the release body).
 - Builds the three ABIs in a parallel matrix, strips symbols (`llvm-strip`, JNI exports preserved), and compresses each library with `zip -9`.
 - Publishes the compressed packages to `user/fahry-a/pumpkin-engine` in Foenui PM and attaches them plus `manifest.json` and `SHA256SUMS.txt` to the GitHub Release (`nightly` is a rolling prerelease, never marked latest).
+
+### Versioning and changelog
+
+- `VERSION` holds the current launcher version (`x.y.z`), and the top section of `CHANGELOG.md` must carry the same version.
+- To cut a release: update both files in the same commit, merge to `master`, and `auto-tag.yml` creates the tag and GitHub Release with notes taken from `CHANGELOG.md`.
 
 ### Required GitHub Actions secrets
 
